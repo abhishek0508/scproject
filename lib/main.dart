@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:news_app_api/views/homepage.dart';
+import 'package:news_app_api/widgets/bottomNavbar.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Colors.white,
       ),
-      home: HomePage(),
+      home: MyBottomNavBar(),
     );
   }
 }
