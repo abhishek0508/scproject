@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:news_app_api/views/discoverPage.dart';
 import 'package:news_app_api/views/homepage.dart';
 import 'package:news_app_api/views/pillbox/pillboxhome.dart';
+import 'package:news_app_api/views/profile.dart';
 
 class MyBottomNavBar extends StatefulWidget {
   @override
@@ -12,6 +13,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
   final List<Widget> _children = [
     DiscoverHome(),
     PillBoxHome(),
+    MyProfileView(),
   ];
   int _currentIndex = 0;
 
