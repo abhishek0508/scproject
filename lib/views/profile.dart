@@ -31,7 +31,7 @@ class _MyProfileViewState extends State<MyProfileView> {
                     shape: BoxShape.circle,
                     image: DecorationImage(
                       fit: BoxFit.fill,
-                      image: AssetImage("assets/images/qeli.jpg"),
+                      image: AssetImage("assets/images/grampsn.jpg"),
                     ),
                   ),
                 ),
@@ -41,7 +41,7 @@ class _MyProfileViewState extends State<MyProfileView> {
               ),
               Center(
                 child: Text(
-                  "Johnetta Doe",
+                  "Grampa Simpson",
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w600,
@@ -75,7 +75,7 @@ class _MyProfileViewState extends State<MyProfileView> {
                       width: 5.0,
                     ),
                     Text(
-                      "Daughter, Shaila Bhatt",
+                      "Son: Homer Simpson",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w400,
@@ -97,7 +97,7 @@ class _MyProfileViewState extends State<MyProfileView> {
                       width: 5.0,
                     ),
                     Text(
-                      "Neighbour, Abhishek",
+                      "Daughter-in-law: Marge Simpson",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w400,
