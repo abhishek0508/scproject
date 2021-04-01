@@ -19,7 +19,7 @@ class _DiscoverHomeState extends State<DiscoverHome> {
         title: Text(
           "Discover",
           style: TextStyle(
-            color: Colors.red,
+            color: Colors.green,
             fontWeight: FontWeight.bold,
             fontSize: 25.0,
           ),
@@ -46,7 +46,7 @@ class _DiscoverHomeState extends State<DiscoverHome> {
                       height: height * 0.15,
                       decoration: BoxDecoration(
                         // borderRadius: BorderRadius.circular(10.0),
-                        color: Colors.red,
+                        color: Colors.green,
                       ),
                       child: Center(
                         child: Text(
@@ -73,7 +73,7 @@ class _DiscoverHomeState extends State<DiscoverHome> {
                       height: height * 0.15,
                       decoration: BoxDecoration(
                         // borderRadius: BorderRadius.circular(10.0),
-                        color: Colors.red,
+                        color: Colors.green,
                       ),
                       child: Center(
                         child: Text(
@@ -117,7 +117,7 @@ class _DiscoverHomeState extends State<DiscoverHome> {
                             Text(
                               "MEDICAL EMERGENCY",
                               style: TextStyle(
-                                color: Colors.red,
+                                color: Colors.green,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 28.0,
                               ),

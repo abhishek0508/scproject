@@ -27,7 +27,7 @@ class _PillBoxHomeState extends State<PillBoxHome> {
                 child: Text(
                   "My Pill Box",
                   style: TextStyle(
-                    color: Colors.red,
+                    color: Colors.green,
                     fontWeight: FontWeight.bold,
                     fontSize: 35.0,
                   ),
@@ -52,7 +52,7 @@ class _PillBoxHomeState extends State<PillBoxHome> {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => NewReminderPage()));
         },
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.green,
         child: Icon(
           Icons.add,
         ),
