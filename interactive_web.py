@@ -183,9 +183,12 @@ class MyHandler(BaseHTTPRequestHandler):
 
     def _interactive_running(self, opt, reply_text):
         reply = {'episode_done': False, 'text': reply_text}
-        # print(reply_text)
+        print(reply_text)
         SHARED['agent'].observe(reply)
         model_res = SHARED['agent'].act()
+        # print(model_res['text'])
+        if "my name is" in model_res['text']: 
+             model_res.force_set('text','My name is Taiga, the friend who loves talking to you.') 
         return model_res
 
     def do_HEAD(self):
@@ -207,7 +210,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 SHARED.get('opt'), body.decode('utf-8')
             )
             # print(model_response)
-            # print(model_response['text'])
+            print(model_response['text'])
             # engine.say(model_response['text'])
             # engine.runAndWait()
             assistant = gTTS(text=model_response['text'], lang='en', slow=False)
