@@ -25,6 +25,9 @@ from gtts import gTTS
 import os
 from  playsound import playsound
 
+import speech_recognition as sr
+
+
 # playsound("out.mp3", True)
 # import pyttsx3
 # engine = pyttsx3.init()
@@ -203,11 +206,38 @@ class MyHandler(BaseHTTPRequestHandler):
         """
         Handle POST request, especially replying to a chat message.
         """
+        print("Chatbot listening")
         if self.path == '/interact':
+            r = sr.Recognizer()
+            text = ""
+
+            with sr.Microphone() as source:
+                print("Adjusting noise ")
+                r.adjust_for_ambient_noise(source, duration=1)
+                print("Recording for 4 seconds")
+                recorded_audio = r.listen(source, timeout=8)
+                print("Done recording")
+
+            ''' Recognizing the Audio '''
+            try:
+                print("Recognizing the text")
+                text = r.recognize_google(
+                        recorded_audio, 
+                        language="en-US"
+                    )
+                print("Decoded Text : {}".format(text))
+
+            except Exception as ex:
+                print(ex)
+                
             content_length = int(self.headers['Content-Length'])
             body = self.rfile.read(content_length)
+            body = text
+            # model_response = self._interactive_running(
+            #     SHARED.get('opt'), body.decode('utf-8')
+            # )
             model_response = self._interactive_running(
-                SHARED.get('opt'), body.decode('utf-8')
+                SHARED.get('opt'), body
             )
             # print(model_response)
             print(model_response['text'])
