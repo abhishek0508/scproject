@@ -91,7 +91,7 @@ WEB_HTML = """
                   <form id = "interact">
                       <div class="field is-grouped">
                         <p class="control is-expanded">
-                          <input class="input" type="text" id="userIn" placeholder="Type in a message">
+                          <input class="input" type="text" id="userIn" placeholder="Type in a message" style="width: 30vw">
                         </p>
                         <p class="control">
                           <button id="respond" type="submit" class="button has-text-white-ter has-background-grey-dark">
@@ -253,7 +253,7 @@ class MyHandler(BaseHTTPRequestHandler):
             print(ent.text)
 
         wvar = ""
-        family = ['son', 'daughter', 'wife', 'father', 'mother', 'husband', 'brother', 'sister']
+        family = ['son', 'daughter', 'wife', 'father', 'mother', 'husband', 'brother', 'sister', 'grandson', 'granddaughter']
         words = nltk.word_tokenize(sentence)
 
         for word in words:
@@ -287,13 +287,15 @@ class MyHandler(BaseHTTPRequestHandler):
             print(body.decode('utf-8'))
 
             model_response = self._interactive_running(
-                SHARED.get('opt'), body
+                SHARED.get('opt'), body.decode('utf-8')
             )
             print(model_response['text'])
 
-            assistant = gTTS(text=model_response['text'], lang='en', slow=False)
-            assistant.save("out.mp3")
-            playsound('out.mp3',True)
+            # assistant = gTTS(text=model_response['text'], lang='en', slow=False)
+            # assistant.save("out.mp3")
+            # playsound('out.mp3',True)
+            engine.say(model_response['text'])
+            engine.runAndWait()
 
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -318,7 +320,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 print("Adjusting noise ")
                 r.adjust_for_ambient_noise(source, duration=1)
                 print("Recording for 4 seconds")
-                recorded_audio = r.listen(source, timeout=8)
+                recorded_audio = r.listen(source, timeout=25)
                 print("Done recording")
 
             ''' Recognizing the Audio '''
@@ -336,9 +338,12 @@ class MyHandler(BaseHTTPRequestHandler):
             model_response = self._interactive_running(
                 SHARED.get('opt'), body
             )
-            assistant = gTTS(text=model_response['text'], lang='en', slow=False)
-            assistant.save("out.mp3")
-            playsound('out.mp3',True)
+            # assistant = gTTS(text=model_response['text'], lang='en', slow=False)
+            # assistant.save("out.mp3")
+            # playsound('out.mp3',True)
+            engine.say(model_response['text'])
+            engine.runAndWait()
+
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
