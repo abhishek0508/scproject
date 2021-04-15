@@ -24,9 +24,21 @@ import parlai.utils.logging as logging
 from gtts import gTTS
 import os
 from  playsound import playsound
+
 import random
 import speech_recognition as sr
 import re
+import nltk
+import spacy
+
+
+# playsound("out.mp3", True)
+import pyttsx3
+engine = pyttsx3.init()
+# engine.setProperty('rate',125)
+# voices = engine.getProperty('voices')
+# engine.setProperty('voice', voices[1].id)
+
 import json
 import time
 
@@ -232,6 +244,29 @@ class MyHandler(BaseHTTPRequestHandler):
              model_res.force_set('text','My name is Taiga, the friend who loves talking to you.') 
         return model_res
 
+    def _generate_family_tree(self, sentence):
+        tagger = spacy.load('en_core_web_sm')
+    
+        doc = tagger(sentence)
+
+        for ent in doc.ents:
+            print(ent.text)
+
+        wvar = ""
+        family = ['son', 'daughter', 'wife', 'father', 'mother', 'husband', 'brother', 'sister']
+        words = nltk.word_tokenize(sentence)
+
+        for word in words:
+            if word in family:
+                for ent in doc.ents:
+                    print(ent.text)
+                    wvar = ent.text
+
+                famfile = open(word + ".txt", 'w')
+                famfile.write(word + ' : ' + wvar + '\n')
+                famfile.close()
+        return
+
     def do_HEAD(self):
         """
         Handle HEAD requests.
@@ -250,13 +285,16 @@ class MyHandler(BaseHTTPRequestHandler):
             body = self.rfile.read(content_length)
             print(body)
             print(body.decode('utf-8'))
+
             model_response = self._interactive_running(
-                SHARED.get('opt'), body.decode('utf-8')
+                SHARED.get('opt'), body
             )
             print(model_response['text'])
+
             assistant = gTTS(text=model_response['text'], lang='en', slow=False)
             assistant.save("out.mp3")
             playsound('out.mp3',True)
+
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -264,12 +302,13 @@ class MyHandler(BaseHTTPRequestHandler):
             self.wfile.write(bytes(json_str, 'utf-8'))
 
         elif self.path=='/reset':
+
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             SHARED['agent'].reset()
             self.wfile.write(bytes("{}", 'utf-8'))
-        
+
         elif self.path=='/speech':
             print("Triggered")
             print("Chatbot listening")
