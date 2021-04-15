@@ -24,13 +24,15 @@ import parlai.utils.logging as logging
 from gtts import gTTS
 import os
 from  playsound import playsound
+import nltk
+import spacy
 
 import speech_recognition as sr
 
 
 # playsound("out.mp3", True)
-# import pyttsx3
-# engine = pyttsx3.init()
+import pyttsx3
+engine = pyttsx3.init()
 # engine.setProperty('rate',125)
 # voices = engine.getProperty('voices')
 # engine.setProperty('voice', voices[1].id)
@@ -194,6 +196,29 @@ class MyHandler(BaseHTTPRequestHandler):
              model_res.force_set('text','My name is Taiga, the friend who loves talking to you.') 
         return model_res
 
+    def _generate_family_tree(self, sentence):
+        tagger = spacy.load('en_core_web_sm')
+    
+        doc = tagger(sentence)
+
+        for ent in doc.ents:
+            print(ent.text)
+
+        wvar = ""
+        family = ['son', 'daughter', 'wife', 'father', 'mother', 'husband', 'brother', 'sister']
+        words = nltk.word_tokenize(sentence)
+
+        for word in words:
+            if word in family:
+                for ent in doc.ents:
+                    print(ent.text)
+                    wvar = ent.text
+
+                famfile = open(word + ".txt", 'w')
+                famfile.write(word + ' : ' + wvar + '\n')
+                famfile.close()
+        return
+
     def do_HEAD(self):
         """
         Handle HEAD requests.
@@ -214,7 +239,7 @@ class MyHandler(BaseHTTPRequestHandler):
             with sr.Microphone() as source:
                 print("Adjusting noise ")
                 r.adjust_for_ambient_noise(source, duration=1)
-                print("Recording for 4 seconds")
+                print("Recording")
                 recorded_audio = r.listen(source, timeout=8)
                 print("Done recording")
 
@@ -232,6 +257,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 
             content_length = int(self.headers['Content-Length'])
             body = self.rfile.read(content_length)
+            self._generate_family_tree(text)
             body = text
             # model_response = self._interactive_running(
             #     SHARED.get('opt'), body.decode('utf-8')
@@ -241,24 +267,26 @@ class MyHandler(BaseHTTPRequestHandler):
             )
             # print(model_response)
             print(model_response['text'])
-            # engine.say(model_response['text'])
-            # engine.runAndWait()
-            assistant = gTTS(text=model_response['text'], lang='en', slow=False)
-            assistant.save("out.mp3")
+            engine.say(model_response['text'])
+            engine.runAndWait()
+            # assistant = gTTS(text=model_response['text'], lang='en', slow=False)
+            # assistant.save("out.mp3")
             # os.system("vlc out.mp3")
-            playsound('out.mp3',True)
+            # playsound('out.mp3',True)
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             json_str = json.dumps(model_response)
             # print(json_str)
             self.wfile.write(bytes(json_str, 'utf-8'))
+
         elif self.path == '/reset':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             SHARED['agent'].reset()
             self.wfile.write(bytes("{}", 'utf-8'))
+
         else:
             return self._respond({'status': 500})
 
