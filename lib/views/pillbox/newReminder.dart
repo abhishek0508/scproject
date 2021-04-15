@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class NewReminderPage extends StatefulWidget {
   @override
@@ -91,18 +92,23 @@ class _NewReminderPageState extends State<NewReminderPage> {
                 height: 50.0,
               ),
               // Spacer(),
-              Container(
-                height: 60.0,
-                width: width * 0.9,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                child: Center(
-                  child: Text(
-                    "Submit",
-                    style: TextStyle(
-                      color: Colors.white,
+              GestureDetector(
+                onTap: () {
+                  Fluttertoast.showToast(msg: "Submitted Successfully");
+                },
+                child: Container(
+                  height: 60.0,
+                  width: width * 0.9,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Submit",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

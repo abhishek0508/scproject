@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class VolunteerRegistration extends StatefulWidget {
   @override
@@ -137,18 +138,23 @@ class _VolunteerRegistrationState extends State<VolunteerRegistration> {
                 height: 30.0,
               ),
               // Spacer(),
-              Container(
-                height: 60.0,
-                width: width * 0.9,
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                child: Center(
-                  child: Text(
-                    "Submit for Verification",
-                    style: TextStyle(
-                      color: Colors.white,
+              GestureDetector(
+                onTap: () {
+                  Fluttertoast.showToast(msg: "Submitted Successfully");
+                },
+                child: Container(
+                  height: 60.0,
+                  width: width * 0.9,
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Submit for Verification",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
