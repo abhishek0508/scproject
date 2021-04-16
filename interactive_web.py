@@ -30,6 +30,7 @@ import speech_recognition as sr
 import re
 import nltk
 import spacy
+from googletrans import Translator
 
 
 # playsound("out.mp3", True)
@@ -91,16 +92,21 @@ WEB_HTML = """
                   <form id = "interact">
                       <div class="field is-grouped">
                         <p class="control is-expanded">
-                          <input class="input" type="text" id="userIn" placeholder="Type in a message">
+                          <input class="input" type="text" id="userIn" placeholder="Type in a message" style="width: 30vw">
                         </p>
                         <p class="control">
-                          <button id="respond" type="submit" class="button has-text-white-ter has-background-grey-dark">
+                          <button style="background-color: green; color: white; height: 35px" id="respond" type="submit">
                             Submit
                           </button>
                         </p>
                         <p class="control">
-                          <button id="buttonaudio" type="button" class="button has-text-white-ter has-background-grey-dark">
+                          <button id="buttonaudio" type="button" style="background-color: green; color: white; height: 35px">
                             Audio Input
+                          </button>
+                        </p>
+                         <p class="control">
+                          <button id="buttonhindi" type="button" style="background-color: green; color: white; height: 35px">
+                            Hindi Input
                           </button>
                         </p>
                         <p class="control">
@@ -198,6 +204,24 @@ WEB_HTML = """
                     parDiv.scrollTo(0, parDiv.scrollHeight);
                 }})
             }});
+            document.getElementById("buttonhindi").addEventListener("click", function(event){{
+                event.preventDefault()
+                var text = document.getElementById("userIn").value;
+                document.getElementById('userIn').value = "";
+                fetch('/speech-hindi',{{
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    method: 'POST',
+                    body: text
+                }}).then(response=>response.json()).then(data=>{{
+                    var parDiv = document.getElementById("parent");
+                    parDiv.append(createChatRow("You", data.inputtext));
+                    // Change info for Model response
+                    parDiv.append(createChatRow("Taiga", data.text));
+                    parDiv.scrollTo(0, parDiv.scrollHeight);
+                }})
+            }});
             document.getElementById("interact").addEventListener("reset", function(event){{
                 event.preventDefault()
                 var text = document.getElementById("userIn").value;
@@ -253,7 +277,7 @@ class MyHandler(BaseHTTPRequestHandler):
             print(ent.text)
 
         wvar = ""
-        family = ['son', 'daughter', 'wife', 'father', 'mother', 'husband', 'brother', 'sister']
+        family = ['son', 'daughter', 'wife', 'father', 'mother', 'husband', 'brother', 'sister', 'grandson', 'granddaughter']
         words = nltk.word_tokenize(sentence)
 
         for word in words:
@@ -287,13 +311,15 @@ class MyHandler(BaseHTTPRequestHandler):
             print(body.decode('utf-8'))
 
             model_response = self._interactive_running(
-                SHARED.get('opt'), body
+                SHARED.get('opt'), body.decode('utf-8')
             )
             print(model_response['text'])
 
             assistant = gTTS(text=model_response['text'], lang='en', slow=False)
             assistant.save("out.mp3")
             playsound('out.mp3',True)
+            # engine.say(model_response['text'])
+            # engine.runAndWait()
 
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -318,7 +344,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 print("Adjusting noise ")
                 r.adjust_for_ambient_noise(source, duration=1)
                 print("Recording for 4 seconds")
-                recorded_audio = r.listen(source, timeout=8)
+                recorded_audio = r.listen(source, timeout=25)
                 print("Done recording")
 
             ''' Recognizing the Audio '''
@@ -339,6 +365,66 @@ class MyHandler(BaseHTTPRequestHandler):
             assistant = gTTS(text=model_response['text'], lang='en', slow=False)
             assistant.save("out.mp3")
             playsound('out.mp3',True)
+            # engine.say(model_response['text'])
+            # engine.runAndWait()
+
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            model_response['inputtext'] = text
+            json_str = json.dumps(model_response)
+            self.wfile.write(bytes(json_str, 'utf-8'))
+        
+        elif self.path=='/speech-hindi':
+            print("Triggered hindi bot")
+            print("Chatbot listening")
+            r = sr.Recognizer()
+            text = ""
+            with sr.Microphone() as source:
+                print("Adjusting noise ")
+                r.adjust_for_ambient_noise(source, duration=1)
+                print("Recording now")
+                recorded_audio = r.listen(source, timeout=25)
+                print("Done recording")
+
+            ''' Recognizing the Audio '''
+            try:
+                print("Recognizing the text")
+                text = r.recognize_google(
+                        recorded_audio, 
+                        language="hi-In"
+                    )
+                print("Decoded Text : {}".format(text))
+
+                from_lan = 'hi'
+                to_lan = 'en'
+                translator = Translator()
+
+                text_to_translate = translator.translate(text,src=from_lan, dest=to_lan)
+
+                text = text_to_translate.text
+
+                print("Tranlated Text: {}".format(text))
+
+            except Exception as ex:
+                print(ex)
+            body = text
+            model_response = self._interactive_running(
+                SHARED.get('opt'), body
+            )
+            translator = Translator()
+            from_l = 'en'
+            to_l = 'hi'
+
+            hindi_out = translator.translate(model_response['text'], src=from_l, dest=to_l)
+            speak = hindi_out.text 
+            # assistant = gTTS(text=model_response['text'], lang='en', slow=False)
+            # assistant.save("out.mp3")
+            # playsound('out.mp3',True)
+            print(speak)
+            engine.say(speak)
+            engine.runAndWait()
+
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
