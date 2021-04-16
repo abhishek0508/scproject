@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:news_app_api/views/YourBuddy/ybHome.dart';
 import 'package:news_app_api/views/discoverPage.dart';
-import 'package:news_app_api/views/homepage.dart';
 import 'package:news_app_api/views/pillbox/pillboxhome.dart';
 import 'package:news_app_api/views/profile.dart';
 
@@ -12,6 +12,7 @@ class MyBottomNavBar extends StatefulWidget {
 class _MyBottomNavBarState extends State<MyBottomNavBar> {
   final List<Widget> _children = [
     DiscoverHome(),
+    YBHome(),
     PillBoxHome(),
     MyProfileView(),
   ];
@@ -30,7 +31,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
       backgroundColor: Colors.white,
       bottomNavigationBar: new Theme(
         data: Theme.of(context).copyWith(
-          canvasColor: Colors.red,
+          canvasColor: Colors.green,
           primaryColor: Colors.white,
           // disabledColor: Colors.grey,
 
@@ -46,6 +47,10 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
             BottomNavigationBarItem(
               icon: new Icon(Icons.search),
               title: new Text("Discover"),
+            ),
+            BottomNavigationBarItem(
+              icon: new Icon(Icons.location_on),
+              title: new Text("Socialize"),
             ),
             BottomNavigationBarItem(
               icon: new Icon(Icons.chat_bubble),
