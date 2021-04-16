@@ -49,6 +49,7 @@ flutter:
   assets:
     - assets/images/qeli.jpg
     - assets/images/soc.png
+    - assets/images/grampsn.jpg
   #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
 
