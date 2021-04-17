@@ -30,7 +30,9 @@ import speech_recognition as sr
 import re
 import nltk
 import spacy
-from googletrans import Translator
+from google_trans_new import google_translator 
+# from googletrans import Translator
+from transformers import pipeline, GPT2Tokenizer
 
 
 # playsound("out.mp3", True)
@@ -42,6 +44,7 @@ engine = pyttsx3.init()
 
 import json
 import time
+classifier = pipeline('sentiment-analysis')
 
 def decontracted(phrase):
     # specific
@@ -122,7 +125,7 @@ WEB_HTML = """
         </div>
 
         <script>
-            function createChatRow(agent, text) {{
+            function createChatRow(agent, text, senti = 1) {{
                 var article = document.createElement("article");
                 article.className = "media"
 
@@ -133,7 +136,8 @@ WEB_HTML = """
                 span.className = "icon is-large";
 
                 var icon = document.createElement("i");
-                icon.className = "fas fas fa-2x" + (agent === "You" ? " fa-user " : agent === "Taiga" ? " fa-robot" : "");
+                //icon.className = "fas fas fa-2x" + (agent === "You" ? " fa-user " : agent === "Taiga" ? " fa-robot" : "");
+                icon.className = "fas fas fa-2x" + (agent === "You" ? " fa-user " : agent === "Taiga" ? ( senti == 0 ? " fa-frown" : (senti == 1 ? " fa-meh" : " fa-smile"   ) ) : "");
 
                 var media = document.createElement("div");
                 media.className = "media-content";
@@ -182,7 +186,8 @@ WEB_HTML = """
                     parDiv.append(createChatRow("You", text));
 
                     // Change info for Model response
-                    parDiv.append(createChatRow("Taiga", data.text));
+                    parDiv.append(createChatRow("Taiga", data.text,data.sentiment));
+                    // parDiv.append(createChatRow("Taiga", data.text));
                     parDiv.scrollTo(0, parDiv.scrollHeight);
                 }})
             }});
@@ -200,7 +205,7 @@ WEB_HTML = """
                     var parDiv = document.getElementById("parent");
                     parDiv.append(createChatRow("You", data.inputtext));
                     // Change info for Model response
-                    parDiv.append(createChatRow("Taiga", data.text));
+                    parDiv.append(createChatRow("Taiga", data.text,data.sentiment));
                     parDiv.scrollTo(0, parDiv.scrollHeight);
                 }})
             }});
@@ -218,7 +223,7 @@ WEB_HTML = """
                     var parDiv = document.getElementById("parent");
                     parDiv.append(createChatRow("You", data.inputtext));
                     // Change info for Model response
-                    parDiv.append(createChatRow("Taiga", data.text));
+                    parDiv.append(createChatRow("Taiga", data.text, data.sentiment));
                     parDiv.scrollTo(0, parDiv.scrollHeight);
                 }})
             }});
@@ -259,6 +264,14 @@ class MyHandler(BaseHTTPRequestHandler):
         rand = random.randint(0,2)
         orig_text = model_res['text']
         orig_text = decontracted(orig_text)
+        sent_result = classifier([orig_text])[0]
+        print ("ola la la la le oo ", sent_result)
+        if (sent_result['score']<0.6):
+            sentFinal = 1
+        elif sent_result['label'] == 'NEGATIVE':
+            sentFinal = 0
+        else :
+            sentFinal = 2        
         model_res.force_set('text',orig_text) 
         if rand == 1:
             model_res.force_set('text',username + ' ' + orig_text)
@@ -266,7 +279,7 @@ class MyHandler(BaseHTTPRequestHandler):
             model_res.force_set('text',orig_text + ' ' + username)
         if "my name is" in model_res['text']: 
              model_res.force_set('text','My name is Taiga, the friend who loves talking to you.') 
-        return model_res
+        return model_res,sentFinal
 
     def _generate_family_tree(self, sentence):
         tagger = spacy.load('en_core_web_sm')
@@ -310,13 +323,21 @@ class MyHandler(BaseHTTPRequestHandler):
             print(body)
             print(body.decode('utf-8'))
 
-            model_response = self._interactive_running(
-                SHARED.get('opt'), body.decode('utf-8')
+            model_response, sentF = self._interactive_running(
+                SHARED.get('opt'), body.decode("utf-8")
             )
             print(model_response['text'])
+            model_response['sentiment'] = sentF
 
             assistant = gTTS(text=model_response['text'], lang='en', slow=False)
-            assistant.save("out.mp3")
+            Flag77 = True
+            while Flag77:
+                try:
+                    print ("trying again")
+                    assistant.save("out.mp3")
+                    Flag77 = False
+                except:
+                    Flag77 = True
             playsound('out.mp3',True)
             # engine.say(model_response['text'])
             # engine.runAndWait()
@@ -359,9 +380,10 @@ class MyHandler(BaseHTTPRequestHandler):
             except Exception as ex:
                 print(ex)
             body = text
-            model_response = self._interactive_running(
+            model_response,sentF = self._interactive_running(
                 SHARED.get('opt'), body
             )
+            model_response['sentiment'] = sentF
             assistant = gTTS(text=model_response['text'], lang='en', slow=False)
             assistant.save("out.mp3")
             playsound('out.mp3',True)
@@ -384,7 +406,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 print("Adjusting noise ")
                 r.adjust_for_ambient_noise(source, duration=1)
                 print("Recording now")
-                recorded_audio = r.listen(source, timeout=25)
+                recorded_audio = r.listen(source, timeout=10)
                 print("Done recording")
 
             ''' Recognizing the Audio '''
@@ -398,37 +420,45 @@ class MyHandler(BaseHTTPRequestHandler):
 
                 from_lan = 'hi'
                 to_lan = 'en'
-                translator = Translator()
+                translator = google_translator()
 
-                text_to_translate = translator.translate(text,src=from_lan, dest=to_lan)
+                text_to_translate = translator.translate(text,lang_src=from_lan, lang_tgt=to_lan)
 
-                text = text_to_translate.text
+                print(text_to_translate)
+                # text = text_to_translate.text
 
-                print("Tranlated Text: {}".format(text))
+                print("Translated Text: {}".format(text))
 
             except Exception as ex:
                 print(ex)
-            body = text
-            model_response = self._interactive_running(
+            body = text_to_translate
+            model_response,sentF = self._interactive_running(
                 SHARED.get('opt'), body
             )
-            translator = Translator()
+            model_response['sentiment'] = sentF
+            translator = google_translator()
             from_l = 'en'
             to_l = 'hi'
-
-            hindi_out = translator.translate(model_response['text'], src=from_l, dest=to_l)
-            speak = hindi_out.text 
-            # assistant = gTTS(text=model_response['text'], lang='en', slow=False)
-            # assistant.save("out.mp3")
+            print(model_response)
+            hindi_out = translator.translate(model_response['text'], lang_src=from_l, lang_tgt=to_l)
+            print(hindi_out)
+            # speak = hindi_out.text
+            speak = hindi_out
+            assistant = gTTS(text=hindi_out, lang='hi', slow=False)
+            assistant.save("out.mp3")
             # playsound('out.mp3',True)
             print(speak)
-            engine.say(speak)
-            engine.runAndWait()
+            # engine.say(speak)
+            playsound('out.mp3')
+            # engine.runAndWait()
 
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             model_response['inputtext'] = text
+            model_response.force_set('text',hindi_out)
+            # model_response['text'] = hindi_out
+            print(model_response)
             json_str = json.dumps(model_response)
             self.wfile.write(bytes(json_str, 'utf-8'))
 
