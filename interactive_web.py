@@ -37,7 +37,7 @@ from transformers import pipeline, GPT2Tokenizer
 
 # playsound("out.mp3", True)
 import pyttsx3
-engine = pyttsx3.init()
+# engine = pyttsx3.init()
 # engine.setProperty('rate',125)
 # voices = engine.getProperty('voices')
 # engine.setProperty('voice', voices[1].id)
