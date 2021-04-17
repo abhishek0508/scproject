@@ -1,0 +1,10 @@
+spacy
+parlai
+gTTS
+SpeechRecognition
+googletrans==3.1.0
+transformers
+pyttsx3==2.71
+playsound
+subword_nmt
+PyAudio
