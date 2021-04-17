@@ -61,9 +61,9 @@ def decontracted(phrase):
     return phrase
 
 
-HOST_NAME = 'localhost'
+HOST_NAME = "localhost"
 PORT = 8080
-username = 'Sahil'
+username = "Sahil"
 SHARED: Dict[Any, Any] = {}
 STYLE_SHEET = "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.css"
 FONT_AWESOME = "https://use.fontawesome.com/releases/v5.3.1/js/all.js"
@@ -127,13 +127,20 @@ WEB_HTML = """
 
                 var span = document.createElement("span");
                 span.className = "icon is-large";
-
+                
 
                 var icon = document.createElement("i");
+                if (senti == 1){
+                    icon.className = " " + (agent === "You" ? " fas 3x fa-user-circle " : agent === "Taiga" ? "fas 3x fa-user-circle" : "");
+                }
+                else if (senti == 2){
+                    icon.className = " " + (agent === "You" ? " fas 3x fa-user-circle " : agent === "Taiga" ? "fas 3x fa-user-circle" : "");
+                }
+                else{
+                    icon.className = " " + (agent === "You" ? " fas 3x fa-user " : agent === "Taiga" ? "fas 3x fa-user-circle" : "");
 
-                icon.className = "fas fas fa-2x" + (agent === "You" ? " fa-user " : agent === "Taiga" ? ( senti == 0 ? " fa-frown" : (senti == 1 ? " fa-meh" : " fa-smile"   ) ) : "");
-                // icon.className = "fas fas fa-2x" + (agent === "You" ? " fa-user " : agent === "Taiga" ? " fa-robot"  : "");
-                
+                }
+
                 var media = document.createElement("div");
                 media.className = "media-content";
 
@@ -181,8 +188,8 @@ WEB_HTML = """
                     parDiv.append(createChatRow("You", text));
 
                     // Change info for Model response
-                    parDiv.append(createChatRow("Taiga", data.text,data.sentiment));
-                    // parDiv.append(createChatRow("Taiga", data.text));
+                    //parDiv.append(createChatRow("Taiga", data.text,data.sentiment));
+                    parDiv.append(createChatRow("Taiga", data.text));
                     parDiv.scrollTo(0, parDiv.scrollHeight);
                 }})
             }});
@@ -200,8 +207,8 @@ WEB_HTML = """
                     var parDiv = document.getElementById("parent");
                     parDiv.append(createChatRow("You", data.inputtext));
                     // Change info for Model response
-                    parDiv.append(createChatRow("Taiga", data.text,data.sentiment));
-                    // parDiv.append(createChatRow("Taiga", data.text));
+                    //parDiv.append(createChatRow("Taiga", data.text,data.sentiment));
+                    parDiv.append(createChatRow("Taiga", data.text));
                     parDiv.scrollTo(0, parDiv.scrollHeight);
                 }})
             }});
@@ -236,11 +243,11 @@ class MyHandler(BaseHTTPRequestHandler):
     """
 
     def _interactive_running(self, opt, reply_text):
-        reply = {'episode_done': False, 'text': reply_text}
-        SHARED['agent'].observe(reply)
-        model_res = SHARED['agent'].act()
-        rand = random.randint(0,2)
-        orig_text = model_res['text']
+        reply = {"episode_done": False, "text": reply_text}
+        SHARED["agent"].observe(reply)
+        model_res = SHARED["agent"].act()
+        rand = random.randint(0, 5)
+        orig_text = model_res["text"]
         orig_text = decontracted(orig_text)
         sent_result = classifier([orig_text])[0]
         print ("ola la la la le oo ", sent_result)
@@ -249,27 +256,39 @@ class MyHandler(BaseHTTPRequestHandler):
         elif sent_result['label'] == 'NEGATIVE':
             sentFinal = 0
         else :
-            sentFinal = 2        
-        model_res.force_set('text',orig_text) 
+            sentFinal = 2
+
+        model_res.force_set("text", orig_text)
         if rand == 1:
-            model_res.force_set('text',username + ' ' + orig_text)
+            model_res.force_set("text", username + " " + orig_text)
         if rand == 2:
-            model_res.force_set('text',orig_text + ' ' + username)
-        if "my name is" in model_res['text']: 
-             model_res.force_set('text','My name is Taiga, the friend who loves talking to you.') 
-        return model_res,sentFinal
-        #return model_res
+            model_res.force_set("text", orig_text + " " + username)
+        if "my name is" in model_res["text"]:
+            model_res.force_set(
+                "text", "My name is Taiga, the friend who loves talking to you."
+            )
+        #return model_res,sentFinal
+        return model_res
 
     def _generate_family_tree(self, sentence):
-        tagger = spacy.load('en_core_web_sm')
-    
+        tagger = spacy.load("en_core_web_sm")
+
         doc = tagger(sentence)
 
         for ent in doc.ents:
             print(ent.text)
 
         wvar = ""
-        family = ['son', 'daughter', 'wife', 'father', 'mother', 'husband', 'brother', 'sister']
+        family = [
+            "son",
+            "daughter",
+            "wife",
+            "father",
+            "mother",
+            "husband",
+            "brother",
+            "sister",
+        ]
         words = nltk.word_tokenize(sentence)
 
         for word in words:
@@ -278,8 +297,8 @@ class MyHandler(BaseHTTPRequestHandler):
                     print(ent.text)
                     wvar = ent.text
 
-                famfile = open(word + ".txt", 'w')
-                famfile.write(word + ' : ' + wvar + '\n')
+                famfile = open(word + ".txt", "w")
+                famfile.write(word + " : " + wvar + "\n")
                 famfile.close()
         return
 
@@ -288,7 +307,7 @@ class MyHandler(BaseHTTPRequestHandler):
         Handle HEAD requests.
         """
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_header("Content-type", "text/html")
         self.end_headers()
 
     def do_POST(self):
@@ -296,19 +315,25 @@ class MyHandler(BaseHTTPRequestHandler):
         Handle POST request, especially replying to a chat message.
         """
 
-        if self.path=='/interact':
-            content_length = int(self.headers['Content-Length'])
+        if self.path == "/interact":
+            content_length = int(self.headers["Content-Length"])
             body = self.rfile.read(content_length)
             print(body)
-            print(body.decode('utf-8'))
+            print(body.decode("utf-8"))
 
-            model_response, sentF = self._interactive_running(
-                SHARED.get('opt'), body.decode("utf-8")
+            #model_response,sentimentF = self._interactive_running(
+            #    SHARED.get("opt"), body.decode("utf-8")
+            #)
+            model_response = self._interactive_running(
+                SHARED.get("opt"), body.decode("utf-8")
             )
-            print(model_response['text'])
-            model_response['sentiment'] = sentF
+            print(model_response["text"])
+            #model_response['sentiment'] = sentimentF 
+            print(model_response)
 
-            assistant = gTTS(text=model_response['text'], lang='en', slow=False)
+
+
+            assistant = gTTS(text=model_response["text"], lang="en", slow=False)
             Flag77 = True
             while Flag77:
                 try:
@@ -317,23 +342,24 @@ class MyHandler(BaseHTTPRequestHandler):
                     Flag77 = False
                 except:
                     Flag77 = True
-            playsound('out.mp3',True)
+
+            playsound("out.mp3", True)
 
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
             json_str = json.dumps(model_response)
-            self.wfile.write(bytes(json_str, 'utf-8'))
+            self.wfile.write(bytes(json_str, "utf-8"))
 
-        elif self.path=='/reset':
+        elif self.path == "/reset":
 
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
-            SHARED['agent'].reset()
-            self.wfile.write(bytes("{}", 'utf-8'))
+            SHARED["agent"].reset()
+            self.wfile.write(bytes("{}", "utf-8"))
 
-        elif self.path=='/speech':
+        elif self.path == "/speech":
             print("Triggered")
             print("Chatbot listening")
             r = sr.Recognizer()
@@ -345,58 +371,51 @@ class MyHandler(BaseHTTPRequestHandler):
                 recorded_audio = r.listen(source, timeout=8)
                 print("Done recording")
 
-            ''' Recognizing the Audio '''
+            """ Recognizing the Audio """
             try:
                 print("Recognizing the text")
-                text = r.recognize_google(
-                        recorded_audio, 
-                        language="en-US"
-                    )
+                text = r.recognize_google(recorded_audio, language="en-US")
                 print("Decoded Text : {}".format(text))
 
             except Exception as ex:
                 print(ex)
             body = text
-            model_response,sentF = self._interactive_running(
-                SHARED.get('opt'), body
-            )
-            model_response['sentiment'] = sentF
-            assistant = gTTS(text=model_response['text'], lang='en', slow=False)
+            model_response = self._interactive_running(SHARED.get("opt"), body)
+            assistant = gTTS(text=model_response["text"], lang="en", slow=False)
             assistant.save("out.mp3")
-            playsound('out.mp3',True)
+            playsound("out.mp3", True)
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
-            model_response['inputtext'] = text
-            #model_response['sentiment'] = sentF
+            model_response["inputtext"] = text
             json_str = json.dumps(model_response)
-            self.wfile.write(bytes(json_str, 'utf-8'))
+            self.wfile.write(bytes(json_str, "utf-8"))
 
         else:
-            return self._respond({'status': 500})
+            return self._respond({"status": 500})
 
     def do_GET(self):
         """
         Respond to GET request, especially the initial load.
         """
         paths = {
-            '/': {'status': 200},
-            '/favicon.ico': {'status': 202},  # Need for chrome
+            "/": {"status": 200},
+            "/favicon.ico": {"status": 202},  # Need for chrome
         }
         if self.path in paths:
             self._respond(paths[self.path])
         else:
-            self._respond({'status': 500})
+            self._respond({"status": 500})
 
     def _handle_http(self, status_code, path, text=None):
         self.send_response(status_code)
-        self.send_header('Content-type', 'text/html')
+        self.send_header("Content-type", "text/html")
         self.end_headers()
         content = WEB_HTML.format(STYLE_SHEET, FONT_AWESOME)
-        return bytes(content, 'UTF-8')
+        return bytes(content, "UTF-8")
 
     def _respond(self, opts):
-        response = self._handle_http(opts['status'], self.path)
+        response = self._handle_http(opts["status"], self.path)
         # print(response)
         self.wfile.write(response)
 
@@ -406,56 +425,56 @@ def setup_interweb_args(shared):
     Build and parse CLI opts.
     """
     parser = setup_args()
-    parser.description = 'Interactive chat with a model in a web browser'
-    parser.add_argument('--port', type=int, default=PORT, help='Port to listen on.')
+    parser.description = "Interactive chat with a model in a web browser"
+    parser.add_argument("--port", type=int, default=PORT, help="Port to listen on.")
     parser.add_argument(
-        '--host',
+        "--host",
         default=HOST_NAME,
         type=str,
-        help='Host from which allow requests, use 0.0.0.0 to allow all IPs',
+        help="Host from which allow requests, use 0.0.0.0 to allow all IPs",
     )
     return parser
 
 
 def shutdown():
     global SHARED
-    if 'server' in SHARED:
-        SHARED['server'].shutdown()
+    if "server" in SHARED:
+        SHARED["server"].shutdown()
     SHARED.clear()
 
 
 def wait():
     global SHARED
-    while not SHARED.get('ready'):
+    while not SHARED.get("ready"):
         time.sleep(0.01)
 
 
 def interactive_web(opt):
     global SHARED
 
-    opt['task'] = 'parlai.agents.local_human.local_human:LocalHumanAgent'
+    opt["task"] = "parlai.agents.local_human.local_human:LocalHumanAgent"
 
     # Create model and assign it to the specified task
     agent = create_agent(opt, requireModelExists=True)
     agent.opt.log()
-    SHARED['opt'] = agent.opt
-    SHARED['agent'] = agent
-    SHARED['world'] = create_task(SHARED.get('opt'), SHARED['agent'])
+    SHARED["opt"] = agent.opt
+    SHARED["agent"] = agent
+    SHARED["world"] = create_task(SHARED.get("opt"), SHARED["agent"])
 
-    MyHandler.protocol_version = 'HTTP/1.0'
-    httpd = HTTPServer((opt['host'], opt['port']), MyHandler)
-    SHARED['server'] = httpd
-    logging.info('http://{}:{}/'.format(opt['host'], opt['port']))
+    MyHandler.protocol_version = "HTTP/1.0"
+    httpd = HTTPServer((opt["host"], opt["port"]), MyHandler)
+    SHARED["server"] = httpd
+    logging.info("http://{}:{}/".format(opt["host"], opt["port"]))
 
     try:
-        SHARED['ready'] = True
+        SHARED["ready"] = True
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     httpd.server_close()
 
 
-@register_script('interactive_web', aliases=['iweb'], hidden=True)
+@register_script("interactive_web", aliases=["iweb"], hidden=True)
 class InteractiveWeb(ParlaiScript):
     @classmethod
     def setup_args(cls):
@@ -465,5 +484,5 @@ class InteractiveWeb(ParlaiScript):
         return interactive_web(self.opt)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     InteractiveWeb.main()
